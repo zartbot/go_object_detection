@@ -82,7 +82,7 @@ type ModelCfg struct {
 }
 
 //New is used to create and load model
-func New(cfg *ModelCfg) *ModelContainer {
+func New(cfg *ModelCfg) (*ModelContainer, error) {
 	m := &ModelContainer{
 		ID:          cfg.ID,
 		Name:        cfg.Name,
@@ -107,21 +107,21 @@ func New(cfg *ModelCfg) *ModelContainer {
 	} else {
 		m.Label, err = LoadLabel(m.LabelPath)
 		if err != nil {
-			logrus.Fatal("Load Label failed:", err)
+			return nil, fmt.Errorf("Load Label failed: %v", err)
 		}
 	}
 
 	//Load Model
 	m.model, err = ioutil.ReadFile(m.ModelPath)
 	if err != nil {
-		logrus.Fatal("Load model failed:", err)
+		return nil, fmt.Errorf("Load model failed: %v", err)
 	}
 
 	//Load Graph
 	m.graph = tf.NewGraph()
 	err = m.graph.Import(m.model, "")
 	if err != nil {
-		logrus.Fatal("Load graph failed:", err)
+		return nil, fmt.Errorf("Load graph failed: %v", err)
 	}
 
 	m.graphOp = &GraphOperation{
@@ -131,7 +131,7 @@ func New(cfg *ModelCfg) *ModelContainer {
 		outputLabel: m.graph.Operation("detection_classes"),
 	}
 
-	return m
+	return m, nil
 }
 
 func (m *ModelContainer) Run() {

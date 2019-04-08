@@ -27,12 +27,16 @@ func VLine(image *image.RGBA, x, y1, y2 int, c color.Color) {
 	}
 }
 
+func rect(image *image.RGBA, x1, x2, y1, y2 int, c color.Color) {
+	HLine(image, y1, x1, x2, c)
+	HLine(image, y2, x1, x2, c)
+	VLine(image, x1, y1, y2, c)
+	VLine(image, x2, y1, y2, c)
+}
+
 func Rectangle(image *image.RGBA, x1, x2, y1, y2, width int, c color.Color) {
 	for w := 0; w < width; w++ {
-		HLine(image, y1+w, x1, x2, c)
-		HLine(image, y2+w, x1, x2, c)
-		VLine(image, x1+w, y1, y2, c)
-		VLine(image, x2+w, y1, y2, c)
+		rect(image, x1+w, x2, y1+w, y2, c)
 	}
 }
 
@@ -49,7 +53,7 @@ func renderLabel(img *image.RGBA, x, y, label int, renderstr string) {
 	d.DrawString(renderstr)
 }
 
-func (m *ModelContainer) RenderObject(inputBytes []byte, objectList []*Object) ([]byte, error) {
+func RenderObject(inputBytes []byte, objectList []*Object) ([]byte, error) {
 	var output bytes.Buffer
 	outputWriter := bufio.NewWriter(&output)
 
@@ -74,6 +78,6 @@ func (m *ModelContainer) RenderObject(inputBytes []byte, objectList []*Object) (
 		renderLabel(imgRGBA, x1, y1, item.Label, labelinRender)
 
 	}
-	err = jpeg.Encode(outputWriter, img, &jpeg.Options{Quality: 75})
+	err = jpeg.Encode(outputWriter, imgRGBA, &jpeg.Options{Quality: 75})
 	return output.Bytes(), err
 }
