@@ -23,31 +23,18 @@ func DefaultModelFunc(d *datastream.DataStream, m *ModelContainer, sess *tf.Sess
 		return
 	}
 
-	bus := int32(0)
-	person := int32(0)
-	motorcycle := int32(0)
-	truck := int32(0)
-	car := int32(0)
+	ObjectCount := make(map[string]uint32)
 	for _, v := range objlist {
-		switch v.LabelStr {
-		case "bus":
-			bus += 1
-		case "person":
-			person += 1
-		case "motorcycle":
-			motorcycle += 1
-		case "car":
-			car += 1
-		case "truck":
-			truck += 1
+
+		item, ok := ObjectCount[v.LabelStr]
+		if !ok {
+			ObjectCount[v.LabelStr] = uint32(1)
+		} else {
+			ObjectCount[v.LabelStr] = item + 1
 		}
 	}
 	d.RecordMap["detect_object"] = objlist
-	d.RecordMap["car"] = car
-	d.RecordMap["bus"] = bus
-	d.RecordMap["truck"] = truck
-	d.RecordMap["person"] = person
-	d.RecordMap["motorcycle"] = motorcycle
+	d.RecordMap["objectCount"] = ObjectCount
 
 	d.RecordMap["ElapsedTime_Prediction"] = time.Since(startTime)
 
